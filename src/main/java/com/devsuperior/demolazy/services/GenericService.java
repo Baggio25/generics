@@ -4,27 +4,22 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.devsuperior.demolazy.dto.EmployeeDTO;
-import com.devsuperior.demolazy.entities.Employee;
-import com.devsuperior.demolazy.repositories.EmployeeRepository;
+import com.devsuperior.demolazy.util.Convertible;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-@Service
-public class GenericService {
+public interface GenericService<T extends Convertible<DTO>, DTO, ID> {
 
-	@Autowired
-	private EmployeeRepository repository;
+	JpaRepository<T, ID> getRepository();
 	
-	public EmployeeDTO findById(Long id) {
-		Optional<Employee> result = repository.findById(id);
-		return new EmployeeDTO(result.get());
+	default DTO findById(ID id) {
+		Optional<T> result = getRepository().findById(id);
+		return result.get().convert();
 	}
 
-	public List<EmployeeDTO> findAll() {
-		List<Employee> list = repository.findAll();
-		return list.stream().map(x -> new EmployeeDTO(x)).collect(Collectors.toList());
+	default List<DTO> findAll() {
+		List<T> list = getRepository().findAll();
+		return list.stream().map(x -> x.convert()).collect(Collectors.toList());
 	}
 
 
